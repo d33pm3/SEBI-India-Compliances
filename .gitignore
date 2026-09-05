@@ -1,0 +1,89 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Build and generated output
+dist/
+dist-ssr/
+build/
+out/
+coverage/
+.nyc_output/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+*.crt
+credentials.json
+service-account*.json
+secrets/
+.secrets/
+
+# Local databases and caches
+*.sqlite
+*.sqlite3
+*.db
+.cache/
+.turbo/
+.vite/
+.eslintcache
+.parcel-cache/
+.DS_Store
+Thumbs.db
+
+# Test and Playwright artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.local
+
+# Uploads, exports, embeddings, RAG
+uploads/
+exports/
+tmp/
+temp/
+embeddings/
+vectorstore/
+rag-source/
+*.faiss
+*.bin
+*.npy
+
+# Package manager leftovers
+.npm/
+.bun/
