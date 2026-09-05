@@ -1,6 +1,7 @@
 import { AppLayout } from '@/components/AppLayout';
 import { StatTile } from '@/components/StatTile';
 import { StatusBadge, RiskBadge } from '@/components/StatusBadges';
+import { STAT_COLORS } from '@/lib/chartTheme';
 import { useComplianceStore } from '@/store/complianceStore';
 import { Link } from 'react-router-dom';
 
@@ -25,20 +26,18 @@ const Index = () => {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatTile label="Total obligations" value={String(items.length)} />
-          <StatTile label="Completed" value={String(completed)} />
-          <StatTile label="Due soon" value={String(dueSoon)} />
-          <StatTile label="Overdue" value={String(overdue)} />
+          <StatTile label="Total obligations" value={items.length} bg={STAT_COLORS.total} />
+          <StatTile label="Completed" value={completed} bg={STAT_COLORS.completed} />
+          <StatTile label="Due soon" value={dueSoon} bg={STAT_COLORS.dueSoon} />
+          <StatTile label="Overdue" value={overdue} bg={STAT_COLORS.overdue} />
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <input
-            className="h-9 rounded-md border bg-background px-3 text-sm"
-            placeholder="Search filings or regulations"
-            value={filters.search}
-            onChange={e => setFilter('search', e.target.value)}
-          />
-        </div>
+        <input
+          className="h-9 w-full max-w-md rounded-md border bg-background px-3 text-sm"
+          placeholder="Search filings or regulations"
+          value={filters.search}
+          onChange={e => setFilter('search', e.target.value)}
+        />
 
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
