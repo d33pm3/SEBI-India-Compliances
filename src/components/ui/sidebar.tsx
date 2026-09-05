@@ -1,62 +1,48 @@
-import * as React from 'react';
-import { cn } from '@/lib/utils';
+import * as React from "react";
+import { PanelLeft } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
-const SidebarContext = React.createContext<{
-  open: boolean;
-  setOpen: (v: boolean) => void;
-  state: 'expanded' | 'collapsed';
-}>({ open: true, setOpen: () => undefined, state: 'expanded' });
-
-export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = React.useState(true);
-  return (
-    <SidebarContext.Provider value={{ open, setOpen, state: open ? 'expanded' : 'collapsed' }}>
-      {children}
-    </SidebarContext.Provider>
-  );
-}
+type SidebarContextValue = { open: boolean; setOpen: (open: boolean) => void; toggle: () => void };
+const SidebarContext = React.createContext<SidebarContextValue | null>(null);
 export function useSidebar() {
-  return React.useContext(SidebarContext);
+  const ctx = React.useContext(SidebarContext);
+  if (!ctx) throw new Error("useSidebar must be used within SidebarProvider");
+  return ctx;
 }
-export function Sidebar({ className, children }: React.HTMLAttributes<HTMLElement> & { collapsible?: string }) {
-  return <aside className={cn('hidden w-64 shrink-0 border-r bg-background md:block', className)}>{children}</aside>;
+export function SidebarProvider({ children, defaultOpen = true }: { children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = React.useState(defaultOpen);
+  const value = React.useMemo(() => ({ open, setOpen, toggle: () => setOpen(v => !v) }), [open]);
+  return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;
 }
-export function SidebarHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('p-4', className)} {...props} />;
+export function Sidebar({ className, children, ...props }: React.HTMLAttributes<HTMLElement>) {
+  const { open } = useSidebar();
+  return <aside data-state={open ? "open" : "closed"} className={cn("flex h-full flex-col border-r bg-sidebar text-sidebar-foreground", open ? "w-64" : "w-14", className)} {...props}>{children}</aside>;
 }
-export function SidebarContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('px-2 pb-4', className)} {...props} />;
+export const SidebarHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn("p-3", className)} {...props} />;
+export const SidebarFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn("mt-auto p-3", className)} {...props} />;
+export const SidebarContent = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn("flex-1 overflow-auto p-2", className)} {...props} />;
+export const SidebarGroup = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn("px-2 py-1", className)} {...props} />;
+export const SidebarGroupLabel = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn("px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground", className)} {...props} />;
+export const SidebarGroupContent = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn("space-y-0.5", className)} {...props} />;
+export const SidebarGroupAction = ({ className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button className={cn("ml-auto", className)} {...props} />;
+export const SidebarSeparator = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn("mx-2 my-2 h-px bg-border", className)} {...props} />;
+export const SidebarRail = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn("hidden", className)} {...props} />;
+export const SidebarInset = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn("flex-1", className)} {...props} />;
+export const SidebarInput = ({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => <input className={cn("h-8 w-full rounded-md border bg-background px-2 text-xs", className)} {...props} />;
+export function SidebarTrigger({ className, ...props }: React.ComponentProps<typeof Button>) {
+  const { toggle } = useSidebar();
+  return <Button variant="ghost" size="icon" className={cn("h-8 w-8", className)} onClick={toggle} {...props}><PanelLeft className="h-4 w-4" /><span className="sr-only">Toggle sidebar</span></Button>;
 }
-export function SidebarFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('mt-auto p-4', className)} {...props} />;
-}
-export function SidebarGroup({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('mb-3', className)} {...props} />;
-}
-export function SidebarGroupLabel({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('px-2 py-1 text-xs font-medium text-muted-foreground', className)} {...props} />;
-}
-export function SidebarGroupContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('space-y-1', className)} {...props} />;
-}
-export function SidebarMenu({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) {
-  return <ul className={cn('space-y-1', className)} {...props} />;
-}
-export function SidebarMenuItem({ className, ...props }: React.HTMLAttributes<HTMLLIElement>) {
-  return <li className={className} {...props} />;
-}
-export function SidebarMenuButton({ className, children, asChild }: React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }) {
-  if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement, {
-      className: cn('flex w-full items-center rounded-md px-2 py-1.5 text-sm hover:bg-muted', className, (children as React.ReactElement).props.className),
-    });
-  }
-  return <button type="button" className={cn('flex w-full items-center rounded-md px-2 py-1.5 text-sm hover:bg-muted', className)}>{children}</button>;
-}
-export function SidebarTrigger({ className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const { open, setOpen } = useSidebar();
-  return <button type="button" className={cn('rounded-md p-2 text-sm', className)} onClick={() => setOpen(!open)} {...props}>Menu</button>;
-}
-export function SidebarInset({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex-1', className)} {...props} />;
-}
+export const SidebarMenu = ({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) => <ul className={cn("space-y-0.5", className)} {...props} />;
+export const SidebarMenuItem = ({ className, ...props }: React.HTMLAttributes<HTMLLIElement>) => <li className={cn("list-none", className)} {...props} />;
+export const SidebarMenuButton = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { isActive?: boolean }>(({ className, isActive, ...props }, ref) => (
+  <button ref={ref} data-active={isActive} className={cn("flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted", isActive && "bg-muted font-medium", className)} {...props} />
+));
+SidebarMenuButton.displayName = "SidebarMenuButton";
+export const SidebarMenuAction = ({ className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button className={cn("ml-auto", className)} {...props} />;
+export const SidebarMenuBadge = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => <span className={cn("ml-auto text-[10px]", className)} {...props} />;
+export const SidebarMenuSkeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div className={cn("h-8 animate-pulse rounded-md bg-muted", className)} {...props} />;
+export const SidebarMenuSub = ({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) => <ul className={cn("ml-4 space-y-0.5", className)} {...props} />;
+export const SidebarMenuSubItem = ({ className, ...props }: React.HTMLAttributes<HTMLLIElement>) => <li className={cn("list-none", className)} {...props} />;
+export const SidebarMenuSubButton = ({ className, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a className={cn("block rounded-md px-2 py-1 text-xs hover:bg-muted", className)} {...props} />;
