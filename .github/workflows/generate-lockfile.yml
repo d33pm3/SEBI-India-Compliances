@@ -1,6 +1,8 @@
 name: generate-lockfile
 
 on:
+  push:
+    branches: [chore/complete-npm-lockfile]
   workflow_dispatch:
 
 permissions:
@@ -13,11 +15,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: chore/complete-npm-lockfile
+      - name: Skip if lockfile already complete
+        id: check
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('package-lock.json')
+          data = json.loads(p.read_text())
+          n = len(data.get('packages', {}))
+          print(f'lockfile_packages={n}')
+          if n >= 50:
+              print('LOCKFILE_COMPLETE=1')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write('complete=true\n')
+          else:
+              print('LOCKFILE_COMPLETE=0')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write('complete=false\n')
+          PY
+        env:
+          PYTHONUNBUFFERED: '1'
       - uses: actions/setup-node@v4
+        if: steps.check.outputs.complete != 'true'
         with:
           node-version: "20"
       - run: npm install
+        if: steps.check.outputs.complete != 'true'
       - name: Commit complete lockfile
+        if: steps.check.outputs.complete != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
